@@ -40,7 +40,6 @@ const corsOptions = {
 
 // ✅ Handle preflight OPTIONS requests
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); // 👈 handles preflight
 app.use(express.json());
 app.use(cookieParser());
 
