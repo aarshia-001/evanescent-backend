@@ -31,14 +31,16 @@ app.use(cors({
   credentials: true
 }));
 
-
 const corsOptions = {
   origin: process.env.CLIENT_URL || 'http://localhost:5173',
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 };
+
 // ✅ Handle preflight OPTIONS requests
 app.use(cors(corsOptions));
-
+app.options('*', cors(corsOptions)); // 👈 handles preflight
 app.use(express.json());
 app.use(cookieParser());
 
