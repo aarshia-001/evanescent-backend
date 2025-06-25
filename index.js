@@ -38,7 +38,7 @@ app.options('*', cors({
 }));
 
 app.use(express.json());
-app.use(cookieParser()););
+app.use(cookieParser());
 
 // Authentication middleware
 function authenticateToken(req, res, next) {
