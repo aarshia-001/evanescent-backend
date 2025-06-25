@@ -25,12 +25,20 @@ pool.connect()
   .catch(err => console.error("❌ Connection to DB failed:", err));
 
 // Middleware
+// Middleware
 app.use(cors({
   origin: process.env.CLIENT_URL || 'http://localhost:5173',
   credentials: true
 }));
+
+// ✅ Handle preflight OPTIONS requests
+app.options('*', cors({
+  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  credentials: true
+}));
+
 app.use(express.json());
-app.use(cookieParser());
+app.use(cookieParser()););
 
 // Authentication middleware
 function authenticateToken(req, res, next) {
