@@ -75,44 +75,87 @@ app.post("/api/signup", async (req, res) => {
   }
 });
 
+// app.post("/api/login", async (req, res) => {
+//   const { email, password } = req.body;
+//   try {
+//     const result = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+//     if (result.rows.length === 0) return res.status(400).json({ error: "Invalid credentials." });
+
+//     const user = result.rows[0];
+//     const isMatch = await bcrypt.compare(password, user.password);
+//     if (!isMatch) return res.status(400).json({ error: "Invalid credentials." });
+
+//     const accessToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: "15m" });
+//     const refreshToken = jwt.sign({ id: user.id }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: "7d" });
+
+//     res.cookie('refreshToken', refreshToken, {
+//       httpOnly: true,
+//       secure: true,
+//       sameSite: 'Lax',
+//       maxAge: 7 * 24 * 60 * 60 * 1000
+//     });
+
+//     res.json({ accessToken });
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ error: "Server error." });
+//   }
+// });
+
+// app.post('/api/refresh-token', (req, res) => {
+//   const refreshToken = req.cookies.refreshToken;
+//   if (!refreshToken) return res.status(401).json({ error: 'No refresh token provided' });
+
+//   jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
+//     if (err) return res.status(403).json({ error: 'Invalid refresh token' });
+
+//     const accessToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '15m' });
+//     res.json({ accessToken });
+//   });
+// });
+
 app.post("/api/login", async (req, res) => {
+  console.log("Login payload:", req.body);
   const { email, password } = req.body;
   try {
     const result = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
-    if (result.rows.length === 0) return res.status(400).json({ error: "Invalid credentials." });
+    if (result.rows.length === 0) {
+      console.log("User not found");
+      return res.status(400).json({ error: "Invalid credentials." });
+    }
 
     const user = result.rows[0];
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ error: "Invalid credentials." });
+    if (!isMatch) {
+      console.log("Password mismatch");
+      return res.status(400).json({ error: "Invalid credentials." });
+    }
 
     const accessToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: "15m" });
     const refreshToken = jwt.sign({ id: user.id }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: "7d" });
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
-      secure: false, // Set to true if using HTTPS in production
+      secure: true,
       sameSite: 'Lax',
       maxAge: 7 * 24 * 60 * 60 * 1000
     });
 
+    console.log("✅ Login success");
     res.json({ accessToken });
   } catch (err) {
-    console.error(err);
+    console.error("Login error:", err);
     res.status(500).json({ error: "Server error." });
   }
 });
 
-app.post('/api/refresh-token', (req, res) => {
-  const refreshToken = req.cookies.refreshToken;
-  if (!refreshToken) return res.status(401).json({ error: 'No refresh token provided' });
 
-  jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
-    if (err) return res.status(403).json({ error: 'Invalid refresh token' });
 
-    const accessToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '15m' });
-    res.json({ accessToken });
-  });
-});
+
+
+
+
+
 
 app.post('/api/logout', (req, res) => {
   res.clearCookie('refreshToken');
